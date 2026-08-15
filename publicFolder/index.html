@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASA APOD Explorer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .controls, .easter-egg {
+            margin: 20px 0;
+        }
+
+        input[type="date"], input[type="text"], button {
+            padding: 8px 12px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: none;
+        }
+
+        button {
+            background-color: #2563eb;
+            color: white;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        #imageContainer {
+            margin: 20px auto;
+            max-width: 800px;
+        }
+
+        #nasaImage {
+            max-width: 100%;
+            border-radius: 8px;
+            display: none;
+        }
+
+        #description {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        hr {
+            margin: 40px auto;
+            max-width: 800px;
+            border: 0;
+            border-top: 1px solid #334155;
+        }
+        .tab-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #233b5d;
+            display: flex;
+            justify-content: center;
+            z-index: 1000; /* Keeps tabs above other content */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Tab Buttons */
+        .tab-button {
+            background-color: inherit;
+            color: #fff;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 20px;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+
+        .tab-button:hover {
+            background-color: #555;
+        }
+
+        /* Active Tab Styling */
+        .tab-button.active {
+            background-color: #007BFF;
+            font-weight: bold;
+        }
+
+        /* 2. CONTENT ADJUSTMENT */
+        .main-content {
+            margin-top: 60px; /* Prevents content from hiding under the fixed tabs */
+            padding: 20px;
+        }
+
+        /* Hide all tab contents by default */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+
+        /* Show the active tab content */
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Smooth fade-in animation */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1 id="title">Loading...</h1>
+    <h3 id="dateText"></h3>
+
+    <div class="controls">
+        <label for="datepicker">Pick a date: </label>
+        <input type="date" id="datepicker">
+        <button onclick="loadApod()">Search</button>
+    </div>
+
+    <div id="imageContainer">
+        <img id="nasaImage" src="" alt="NASA Space Picture">
+    </div>
+
+    <p id="description"></p>
+
+    <hr>
+
+    <div class="easter-egg">
+        <h3>Creator Information</h3>
+        <input type="text" id="userInput" placeholder="Type Here If You Want to Know More About the Creator">
+        <button id="submitBtn">Submit</button>
+        <p id="output"></p>
+    </div>
+
+    <script>
+        // NASA APOD Loader Logic
+        function loadApod() {
+            const pickedDate = document.getElementById('datepicker').value;
+            let endpoint = '/get-apod-data';
+
+            if (pickedDate) {
+                endpoint += '?userDate=' + pickedDate;
+            }
+
+            fetch(endpoint)
+                .then(res => res.json())
+                .then(data => {
+                    const titleEl = document.getElementById('title');
+                    const dateEl = document.getElementById('dateText');
+                    const imageEl = document.getElementById('nasaImage');
+                    const descEl = document.getElementById('description');
+
+                    titleEl.innerText = data.title || 'Error loading title';
+                    dateEl.innerText = data.date || '';
+                    descEl.innerText = data.explanation || '';
+
+                    if (data.media_type === 'image') {
+                        imageEl.src = data.url;
+                        imageEl.style.display = 'block';
+                    } else {
+                        imageEl.style.display = 'none';
+                        titleEl.innerText += ' (Video content - check NASA site)';
+                    }
+                })
+                .catch(err => {
+                    console.error('Fetch error:', err);
+                    document.getElementById('title').innerText = 'Failed to load image.';
+                });
+        }
+
+        // Easter Egg Logic
+        const inputField = document.getElementById("userInput");
+        const submitButton = document.getElementById("submitBtn");
+        const outputArea = document.getElementById("output");
+
+        submitButton.addEventListener("click", function() {
+            const userValue = inputField.value;
+            
+            if (userValue.trim() !== "") {
+                outputArea.innerHTML = `You typed: <strong>${userValue}</strong><br>` +
+                    `Ramcharit Podamala created this site and his favorite color is blue.<br>` +
+                    `Thank you for visiting!`;
+            } else {
+                outputArea.textContent = "Type something first!";
+            }
+        });
+
+        // Initial APOD load
+        loadApod();
+    </script>
+   <div class="tab-container">
+        <button class="tab-button active" onclick="switchTab(event, 'tab1')">Historic Achievements</button>
+        <button class="tab-button" onclick="switchTab(event, 'tab2')">Current Innovations</button>
+        <button class="tab-button" onclick="switchTab(event, 'tab3')">Future Plans</button>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div id="tab1" class="tab-content active">
+            <h2>3 Monumental Achievements</h2>
+            <p>Explorer 1,) </p>
+            <p style="height: 70px;">Launched in 1958, it became the first U.S. Satelite. Measuring at 80 inches, completed in less than 3 months, orbited the Earth 58,000 times.  </p>
+            <p>Hubble Space telescope) </p>
+            <p style="height: 70px;">Launched in 1990, it shifted our view from Ground-Based Telescopes to more capable Space-Telescopes. Although not the first space-telescope, it has made over 1.5 million observations and has 10-20 times the resolution of a ground-based telescope. </p>
+            <p>Apollo 11) </p>
+            <p style="height: 70px;">Launched in 1969, allowed for the first human steps on the Moon, and expanded the frontier for space exploration.</p>
+        </div>
+
+        <div id="tab2" class="tab-content">
+            <h2>Recent NASA Breakthroughs</h2>
+            <p>Lithium-Fed Thrusters)</p>
+            <p style="height: 70px;">Designed for the future of Space Exploration, they are next-gen electric propulsion systems to get humans to Mars. </p>
+            <p>Electrodynamic Dust Sheilds)</p>
+            <p style="height: 70px;">Dust is a huge problem on the Moon, it can damage space suits, technology, and stick to solar panels with its jagged edges. Therefore, by using a electrodynamic currents, it repels most Regolith. </p>
+            <p>GRX-810 Superalloy)</p>
+            <p style="height: 70px;">A revolutionary 3D-printed material that can withstand over 2000 degrees Fahrenheit while lasting longer than traditional aerospace metals. </p>
+        </div>
+
+        <div id="tab3" class="tab-content">
+            <h2>NASA's Artemis Program</h2>
+            <p>A Multi-Mission campaign aimed at putting Humans back on the Moon. This is comprised of 5 distinct phases. Two of which, have already been meet through Artemis I and Artemis II. These two incredible pioneering missions validated the SLS rocket and Orion Spacecraft with a crew test flight. The 2 upcoming planned missions are set to be completed every year from 2027-2028 will target testing proximity operations, docking-procedures, Human Landing Systems, and Axiom Space Suits. The final Artemis V mission focuses on repeated surface landings, deploying pressurized and unpressurized rovers, and building starting elements of a lunar base camp. </p>
+        </div>
+    </div>
+    <!-- Tab Switiching Mechanic -->
+    <script>
+        function switchTab(event, tabId) {
+            // 1. Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.classList.remove('active'));
+
+            // 2. Remove "active" class from all buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+
+            // 3. Show the selected tab content
+            document.getElementById(tabId).classList.add('active');
+
+            // 4. Set the clicked button as active
+            event.currentTarget.classList.add('active');
+            
+            // Optional: Auto-scroll to top when a new tab is clicked
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
